@@ -140,7 +140,8 @@ def _post(payload: dict, timeout: int = 900):
 def llm_stream(messages, max_tokens=1600, temperature=0.2):
     payload = {"model": "local", "messages": messages, "stream": True,
                "temperature": temperature, "top_p": 0.9,
-               "max_tokens": max_tokens, "cache_prompt": True}
+               "max_tokens": max_tokens, "cache_prompt": True,
+               "chat_template_kwargs": {"enable_thinking": False}}
     try:
         resp = _post(payload)
     except urllib.error.URLError as exc:
@@ -170,7 +171,8 @@ def llm_stream(messages, max_tokens=1600, temperature=0.2):
 def llm_once(messages, max_tokens=1200, temperature=0.2):
     payload = {"model": "local", "messages": messages, "stream": False,
                "temperature": temperature, "top_p": 0.9,
-               "max_tokens": max_tokens, "cache_prompt": True}
+               "max_tokens": max_tokens, "cache_prompt": True,
+               "chat_template_kwargs": {"enable_thinking": False}}
     resp = _post(payload)
     with resp:
         data = json.loads(resp.read().decode("utf-8", "replace"))

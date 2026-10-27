@@ -102,7 +102,8 @@ cp models.conf.example models.conf   # 然后改成你自己的路径
 ./docdesk.sh --model /models/x.gguf  # 或者直接给路径
 ```
 
-任何 7–9B 的 instruct 模型都能用（Qwen 系模板）。上下文默认 98304，`--ctx 65536` 可降；
+任何 7–9B 的 instruct 模型都能用（Qwen 系模板）。thinking 模型也支持——请求里固定发
+`enable_thinking: false`，否则它们会把输出预算烧在思考上、正文为空。上下文默认 98304，`--ctx 65536` 可降；
 IQ4_XS 这类更大的权重建议 64k，96k 容易 OOM。
 
 ## 为什么"关机就没了"
