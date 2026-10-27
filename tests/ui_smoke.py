@@ -30,7 +30,7 @@ function El(id){
     appendChild(c){LOG.push('append:'+(c&&c.className||'')); return c},
     remove(){LOG.push('remove')},
     addEventListener(){}, querySelector(){return El('q')}, querySelectorAll(){return []},
-    closest(){return null}, scrollIntoView(){}, focus(){}, click(){}, setAttribute(){},
+    closest(){return null}, contains(){return false}, scrollIntoView(){}, focus(){}, click(){}, setAttribute(){},
     value:'', disabled:false, files:[]
   };
   return o;

@@ -29,6 +29,7 @@ button.danger{background:#3a1f27;border-color:#5c2b36;color:#ffc6d0}
 select{font:inherit;font-size:13px;background:var(--panel);color:var(--text);
 border:1px solid var(--line);border-radius:8px;padding:6px 8px}
 main{max-width:900px;margin:0 auto;padding:22px 18px 210px}
+body.panel-open main{padding-bottom:330px}
 .drop{border:1.5px dashed #2f3949;border-radius:16px;padding:44px 20px;text-align:center;
 background:linear-gradient(180deg,#131821,#0f131a);transition:.15s;margin-top:9vh}
 .drop.over{border-color:var(--accent);background:#141d2c}
@@ -72,8 +73,15 @@ border-radius:8px;padding:8px 12px;margin-top:8px}
 footer{position:fixed;left:0;right:0;bottom:0;padding:10px 18px 12px;
 background:linear-gradient(180deg,rgba(14,17,22,0),rgba(14,17,22,.96) 26%)}
 footer .inner{max-width:900px;margin:0 auto}
-.presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.presets button{font-size:12px;padding:4px 10px;border-radius:999px;color:#a9b3c3}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;
+margin-bottom:8px;padding:8px;background:var(--panel);border:1px solid var(--line);
+border-radius:12px;animation:pop .12s ease-out}
+.presets button{font-size:12px;padding:6px 8px;border-radius:8px;color:#a9b3c3;background:#1c222c;
+border-color:#2b3341;text-align:center}
+.presets button:hover{color:var(--text);border-color:#3a4456}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.icon{width:46px;height:46px;padding:0;font-size:16px;line-height:1;flex:0 0 auto;color:#9aa4b2}
+.icon.on{color:#cfe0ff;border-color:#2f4570;background:#20304d}
 .input-row{display:flex;gap:8px;align-items:flex-end}
 textarea#q{flex:1;resize:none;min-height:46px;max-height:180px;padding:11px 14px;
 background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;
@@ -82,8 +90,9 @@ textarea#q:focus{border-color:#3a4d70}
 #send{height:46px;padding:0 20px}
 .foot{font-size:11px;color:#5d6675;margin-top:6px;text-align:center}
 @media(max-width:640px){main{padding:14px 12px 230px}
+body.panel-open main{padding-bottom:400px}
 header{padding:8px 12px}.chip b{max-width:140px}
-.presets{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}}
+.presets{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -113,7 +122,7 @@ header{padding:8px 12px}.chip b{max-width:140px}
 </main>
 <footer id="composer" class="hidden">
   <div class="inner">
-    <div class="presets">
+    <div id="presetsPanel" class="presets hidden">
       <button data-preset="summary">全文摘要</button>
       <button data-preset="points">要点清单</button>
       <button data-preset="timeline">时间线</button>
@@ -124,7 +133,8 @@ header{padding:8px 12px}.chip b{max-width:140px}
       <button id="addmore">＋ 加文件</button>
     </div>
     <div class="input-row">
-      <textarea id="q" rows="1" placeholder="就这些文件问点什么…（Enter 发送，Shift+Enter 换行）"></textarea>
+      <button id="more" class="icon" title="快捷指令 / 加文件" aria-label="快捷指令">≡</button>
+      <textarea id="q" rows="1" placeholder="问点什么…（Enter 发送）"></textarea>
       <button id="send" class="primary">发送</button>
     </div>
     <div class="foot">聊到的东西只在这台机器的内存里；刷新页面记录即消失，关机则全部销毁。</div>
@@ -207,7 +217,7 @@ async function upload(files){
   }
 }
 $('#pick').onclick=()=>$('#file').click();
-$('#addmore').onclick=()=>$('#file').click();
+$('#addmore').onclick=()=>{closePanel();$('#file').click()};
 $('#file').onchange=e=>{upload([...e.target.files]);e.target.value=''};
 ['dragenter','dragover'].forEach(t=>document.addEventListener(t,e=>{
   e.preventDefault();$('#drop').classList.add('over')}));
@@ -327,12 +337,24 @@ $('#chat').addEventListener('click',e=>{
 });
 function autoGrow(){const t=$('#q');t.style.height='auto';t.style.height=Math.min(180,t.scrollHeight)+'px'}
 $('#q').addEventListener('input',autoGrow);
-$('#send').onclick=()=>{const t=$('#q').value;$('#q').value='';autoGrow();ask(null,t)};
+const panel=$('#presetsPanel');
+const closePanel=()=>{panel.classList.add('hidden');$('#more').classList.remove('on');
+  document.body.classList.remove('panel-open')};
+$('#more').onclick=e=>{e.stopPropagation();
+  const open=panel.classList.toggle('hidden');$('#more').classList.toggle('on',!open);
+  document.body.classList.toggle('panel-open',!open)};
+document.addEventListener('click',e=>{
+  if(panel.classList.contains('hidden'))return;
+  if(panel.contains(e.target)||(e.target.closest&&e.target.closest('#more')))return;
+  closePanel();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel()});
+$('#send').onclick=()=>{closePanel();const t=$('#q').value;$('#q').value='';autoGrow();ask(null,t)};
 $('#q').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('#send').click()}
 });
 document.querySelectorAll('.presets button[data-preset]').forEach(b=>{
-  b.onclick=()=>{const t=$('#q').value;$('#q').value='';autoGrow();ask(b.dataset.preset,t)};
+  b.onclick=()=>{closePanel();const t=$('#q').value;$('#q').value='';autoGrow();ask(b.dataset.preset,t)};
 });
 $('#shred').onclick=async()=>{
   if(!confirm('清空所有文档和聊天记录，并关闭本地服务？'))return;
