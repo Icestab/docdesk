@@ -1,0 +1,7 @@
+# 复制成 models.conf 再改（models.conf 已在 .gitignore 里，不会被提交）
+#
+# 左边是名字，右边是 .gguf 路径。启动时用 --model <名字>。
+# 也可以写 ${DOCDESK_MODEL_DIR} 变量，默认 /models。
+
+main_path="${DOCDESK_MODEL_DIR}/your-model-Q4_K_M.gguf"
+# small_path="${DOCDESK_MODEL_DIR}/another-model-IQ4_XS.gguf"
