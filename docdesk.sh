@@ -75,6 +75,7 @@ fi
 # --model 可以是 models.conf 里的名字，也可以直接给 .gguf 路径
 var="${MODEL}_path"
 GGUF="${!var:-}"
+
 if [[ -z "$GGUF" && -f "$MODEL" ]]; then GGUF="$MODEL"; fi
 if [[ -z "$GGUF" ]]; then
   echo "没有叫 \"$MODEL\" 的模型。在 models.conf 里加一行 ${MODEL}_path=/path/to.gguf，"
@@ -100,6 +101,10 @@ if [[ -z "$CTX" ]]; then
   case "$MODEL" in defiant) CTX=65536 ;; *) CTX=98304 ;; esac
 fi
 
+# 每个模型可以覆盖上下文和额外参数：<名字>_ctx / <名字>_args（models.conf 里写）
+ctxv="${MODEL}_ctx"; MCTX="${!ctxv:-$CTX}"
+argsv="${MODEL}_args"; EXTRA="${!argsv:-}"
+
 if ss -tln 2>/dev/null | grep -q ":$PORT "; then
   echo "端口 $PORT 被占用，可能已有一个 docdesk 在跑。"; exit 1
 fi
@@ -114,8 +119,9 @@ export PYTHONUNBUFFERED=1
 LLAMA_LOG=/dev/null
 [[ $DEBUG == 1 ]] && LLAMA_LOG="/tmp/docdesk-llama-$$.log"
 
-"$BIN" -m "$GGUF" -ngl 99 -c "$CTX" -fa on -ctk q8_0 -ctv q8_0 -ub 512 -np 1 \
-  --reasoning off --host 127.0.0.1 --port "$LLAMA_PORT" --jinja \
+# shellcheck disable=SC2086
+"$BIN" -m "$GGUF" -ngl 99 -c "$MCTX" -fa on -ctk q8_0 -ctv q8_0 -ub 512 -np 1 \
+  --reasoning off --host 127.0.0.1 --port "$LLAMA_PORT" --jinja $EXTRA \
   >"$LLAMA_LOG" 2>&1 &
 LLAMA_PID=$!
 echo "$LLAMA_PID" > "$PIDS/llama-$LLAMA_PORT.pid"

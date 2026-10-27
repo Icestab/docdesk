@@ -7,3 +7,8 @@
 
 main_path="${DOCDESK_MODEL_DIR}/your-model-Q4_K_M.gguf"
 # small_path="${DOCDESK_MODEL_DIR}/another-model-IQ4_XS.gguf"
+
+# 35B 这种要 --cpu-moe / --n-cpu-moe 的大模型，可以单独指定上下文和额外参数：
+# occamy_path="${DOCDESK_MODEL_DIR}/occamy-xxx-IQ3_XXS.gguf"
+# occamy_ctx=65536
+# occamy_args="--n-cpu-moe 24 -ub 2048"
