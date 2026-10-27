@@ -199,10 +199,10 @@ async function upload(files){
       state.docs=j.docs;state.total=j.total_tokens;renderDocs();
       note.remove();
       const a=j.added;
-      let note='已载入 **'+a.name+'**：'+a.pages+' 页，约 '+fmtTok(a.tokens)+' tok';
-      if(a.ocr)note+='。其中 **'+a.ocr+' 页是 OCR 识别**，形近字可能错（期末/期未），引用原文前请核对';
-      if(a.scanned&&a.scanned.length)note+='。还有 '+a.scanned.length+' 页没认出文字（第 '+a.scanned.slice(0,8).join('、')+' 页）';
-      addMsg('bot',note);
+      let msg='已载入 **'+a.name+'**：'+a.pages+' 页，约 '+fmtTok(a.tokens)+' tok';
+      if(a.ocr)msg+='。其中 **'+a.ocr+' 页是 OCR 识别**，形近字可能错（期末/期未），引用原文前请核对';
+      if(a.scanned&&a.scanned.length)msg+='。还有 '+a.scanned.length+' 页没认出文字（第 '+a.scanned.slice(0,8).join('、')+' 页）';
+      addMsg('bot',msg);
     }catch(e){note.querySelector('.body').innerHTML='<div class="err">'+esc(e.message)+'</div>'}
   }
 }

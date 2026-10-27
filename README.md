@@ -185,6 +185,17 @@ ui.html        单页界面（无外部资源）
 - `llama-server` 找不到 → 依次找 `$DOCDESK_LLAMA`、`PATH`、`~/src/llama.cpp-*/build/bin/`
 - 模型目录默认 `/models`，可用 `DOCDESK_MODEL_DIR=/path/to/models` 覆盖
 
+## 改界面之后
+
+界面是单文件 `ui.html`，没有构建步骤。改完跑一下冒烟测试（假 DOM + quickjs，不需要浏览器）：
+
+```bash
+pip install quickjs
+python3 tests/ui_smoke.py
+```
+
+它会真的执行上传、粘贴两条路径，能抓到 TDZ、拼错函数名这类运行时错误。
+
 ## 排错
 
 - `端口 8081 被占用` → 可能已有一个在跑，`./docdesk.sh stop`
