@@ -199,14 +199,25 @@ def build_turn(desk, question, mode):
             q = desk.history[-1]["q"] + " " + question
         idxs = desk.index.search(q, budget=RETRIEVE_BUDGET)
     context, sources = retrieve.build_context(chunks, idxs)
-    msgs = [{"role": "system",
-             "content": SYSTEM_PROMPT.format(today=str(date.today()))}]
-    for h in desk.history[-MAX_HISTORY:]:
-        msgs.append({"role": "user", "content": h["q"]})
-        msgs.append({"role": "assistant", "content": h["a"]})
-    msgs.append({"role": "user",
-                 "content": "[资料]（共 %d 条，引用编号只能用 1-%d）\n%s\n[资料结束]\n\n问题：%s"
-                 % (len(sources), len(sources), context, question)})
+    head = SYSTEM_PROMPT.format(today=str(date.today()))
+    if mode == "full":
+        # 全文模式：资料放进 system，作为稳定前缀 —— 后面的追问只 prefill 问题本身，
+        # 命中 llama-server 的 prompt cache（实测每轮省 7-10 秒）
+        msgs = [{"role": "system", "content":
+                 head + "\n\n[资料]（共 %d 条，引用编号只能用 1-%d）\n%s\n[资料结束]"
+                 % (len(sources), len(sources), context)}]
+        for h in desk.history[-MAX_HISTORY:]:
+            msgs.append({"role": "user", "content": h["q"]})
+            msgs.append({"role": "assistant", "content": h["a"]})
+        msgs.append({"role": "user", "content": question})
+    else:
+        msgs = [{"role": "system", "content": head}]
+        for h in desk.history[-MAX_HISTORY:]:
+            msgs.append({"role": "user", "content": h["q"]})
+            msgs.append({"role": "assistant", "content": h["a"]})
+        msgs.append({"role": "user", "content":
+                     "[资料]（共 %d 条，引用编号只能用 1-%d）\n%s\n[资料结束]\n\n问题：%s"
+                     % (len(sources), len(sources), context, question)})
     return msgs, sources, mode
 
 
